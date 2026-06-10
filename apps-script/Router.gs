@@ -17,6 +17,7 @@ function routeRequest_(method, action, params) {
       case 'categories':       return getCategories_(params);
       case 'stats':            return getStats_(params);
       case 'ustadz':           return getUstadz_(params);
+      case 'listUstadz':       return listUstadz_(params);
       case 'sessions':         return getSessions_(params);
       case 'ping':             return ok_({ time: nowIso_() }, 'pong');
       default:                 return err_('Action GET tidak dikenal: ' + action, 'NOT_FOUND');

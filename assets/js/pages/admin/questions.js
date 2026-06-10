@@ -50,10 +50,17 @@ document.addEventListener('alpine:init', () => {
 
     apply() {
       const term = this.q.trim().toLowerCase();
+      const myEmail = this.$store?.auth?.user?.email || '';
       this.filtered = this.all.filter((it) => {
         const matchStatus = !this.status || it.status === this.status;
         const hay = ((it.title || '') + ' ' + (it.question || '') + ' ' + (it.author_name || '')).toLowerCase();
-        return matchStatus && (!term || hay.includes(term));
+        const matchTerm = !term || hay.includes(term);
+        // Untuk ustadz: tampilkan pertanyaan yang ditujukan ke mereka
+        // ATAU pertanyaan yang belum punya preferensi ustadz (open for all)
+        const matchUstadz = this.isAdmin
+          || !it.ustadz_preference
+          || it.ustadz_preference === myEmail;
+        return matchStatus && matchTerm && matchUstadz;
       });
     },
 

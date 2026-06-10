@@ -30,6 +30,7 @@ var CONFIG = {
       'title', 'question', 'answer', 'category', 'slug', 'status',
       'ustadz_email', 'ustadz_name', 'author_name', 'author_city',
       'anonymous', 'views', 'session_id',
+      'ustadz_preference', 'ustadz_preference_name',
     ],
     USERS: ['email', 'name', 'role', 'password', 'active'],
     CATEGORIES: ['id', 'name'],

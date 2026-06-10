@@ -102,7 +102,7 @@
   <main class="max-w-5xl mx-auto px-4 -mt-6 pb-20">
 
     <!-- ============ FORM PERTANYAAN ============ -->
-    <section x-data="questionForm()" class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg ring-1 ring-slate-200/70 dark:ring-slate-700 p-5 sm:p-7">
+    <section x-data="questionForm()" x-init="init()" class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg ring-1 ring-slate-200/70 dark:ring-slate-700 p-5 sm:p-7">
       <h2 class="text-lg font-bold flex items-center gap-2"><i class="ti ti-pencil text-accent text-xl"></i>Kirim Pertanyaan</h2>
       <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Pertanyaan Anda akan ditinjau ustadz sebelum dipublikasikan.</p>
 
@@ -130,6 +130,26 @@
               <option :value="c" x-text="c"></option>
             </template>
           </select>
+        </div>
+
+        <!-- ======== PILIHAN USTADZ (OPSIONAL) ======== -->
+        <div>
+          <label class="block text-sm font-medium mb-1">
+            Tujukan kepada Ustadz
+            <span class="text-slate-400 font-normal">(opsional)</span>
+          </label>
+          <select x-model="form.ustadz_preference" id="select-ustadz-preference"
+                  class="w-full rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-900 focus:ring-primary focus:border-primary">
+            <option value="">— Pilih Ustadz (opsional) —</option>
+            <template x-for="u in ustadzList" :key="u.email">
+              <option :value="u.email" x-text="u.name"></option>
+            </template>
+          </select>
+          <!-- Keterangan -->
+          <p class="mt-1.5 text-xs text-slate-400 dark:text-slate-500 flex items-start gap-1.5">
+            <i class="ti ti-info-circle shrink-0 mt-0.5"></i>
+            <span>Jika dikosongkan, admin akan membantu mengarahkan pertanyaan Anda ke ustadz yang tepat, atau pertanyaan akan tampil di semua dashboard ustadz dan dijawab oleh siapa yang lebih dahulu merespons.</span>
+          </p>
         </div>
 
         <div>

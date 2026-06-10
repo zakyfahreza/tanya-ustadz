@@ -215,6 +215,18 @@ function submitQuestion_(params) {
   // bila kosong pakai sesi yang sedang aktif (otomatis saat kajian berlangsung).
   var sessionId = sanitizeText_(params.session_id) || getActiveSessionId_();
 
+  // Preferensi ustadz dari jama'ah (opsional)
+  var ustadzPrefEmail = '';
+  var ustadzPrefName = '';
+  if (params.ustadz_preference) {
+    var prefEmail = String(params.ustadz_preference).trim().toLowerCase();
+    var prefUser = findRow_(CONFIG.SHEETS.USERS, 'email', prefEmail);
+    if (prefUser && String(prefUser.role) === CONFIG.ROLES.USTADZ && toBool_(prefUser.active)) {
+      ustadzPrefEmail = prefUser.email;
+      ustadzPrefName  = prefUser.name;
+    }
+  }
+
   var obj = {
     id: id,
     created_at: now,
@@ -233,10 +245,12 @@ function submitQuestion_(params) {
     anonymous: anonymous ? 'TRUE' : 'FALSE',
     views: 0,
     session_id: sessionId,
+    ustadz_preference: ustadzPrefEmail,
+    ustadz_preference_name: ustadzPrefName,
   };
 
   appendRow_(CONFIG.SHEETS.QUESTIONS, obj);
-  logEvent_('SUBMIT_QUESTION', { id: id });
+  logEvent_('SUBMIT_QUESTION', { id: id, ustadz_preference: ustadzPrefEmail });
   return ok_({ id: id }, 'Pertanyaan berhasil dikirim.');
 }
 
@@ -256,9 +270,17 @@ function adminQuestions_(params) {
   var auth = requireAuth_(params.token, false);
   var rows = readRows_(CONFIG.SHEETS.QUESTIONS);
 
-  // Ustadz hanya melihat yang ditugaskan kepadanya
+  // Ustadz melihat:
+  //   (a) pertanyaan yang sudah di-assign kepadanya, ATAU
+  //   (b) pertanyaan yang dipilih jama'ah untuk mereka (preferensi), ATAU
+  //   (c) pertanyaan yang belum punya preferensi ustadz sama sekali (open for all)
   if (auth.role === CONFIG.ROLES.USTADZ) {
-    rows = rows.filter(function (r) { return String(r.ustadz_email) === auth.email; });
+    rows = rows.filter(function (r) {
+      var assignedToMe  = String(r.ustadz_email) === auth.email;
+      var preferredToMe = String(r.ustadz_preference || '') === auth.email;
+      var openForAll    = !String(r.ustadz_preference || '').trim();
+      return assignedToMe || preferredToMe || openForAll;
+    });
   }
   // Filter status
   if (params.status) {
@@ -285,6 +307,8 @@ function adminQuestions_(params) {
       author_name: r.author_name, author_city: r.author_city,
       anonymous: toBool_(r.anonymous), views: Number(r.views) || 0,
       session_id: r.session_id,
+      ustadz_preference: r.ustadz_preference || '',
+      ustadz_preference_name: r.ustadz_preference_name || '',
       created_at: toIso_(r.created_at), updated_at: toIso_(r.updated_at),
       published_at: toIso_(r.published_at),
     };

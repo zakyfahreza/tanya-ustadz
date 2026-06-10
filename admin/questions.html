@@ -106,6 +106,13 @@
               <span x-show="item.ustadz_name" x-text="' · ' + item.ustadz_name"></span>
               <span x-text="' · ' + UI.formatDate(item.created_at)"></span>
             </div>
+            <!-- Badge preferensi ustadz dari jama'ah -->
+            <div x-show="item.ustadz_preference_name || item.ustadz_preference" class="mt-1.5">
+              <span class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 ring-1 ring-amber-200 dark:ring-amber-700">
+                <i class="ti ti-user-check text-[11px]"></i>
+                Ditujukan ke: <span x-text="item.ustadz_preference_name || item.ustadz_preference"></span>
+              </span>
+            </div>
 
             <!-- Aksi -->
             <div class="mt-3 flex flex-wrap gap-2">

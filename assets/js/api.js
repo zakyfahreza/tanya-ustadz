@@ -98,6 +98,7 @@ window.API = (function () {
     stats: () => get('stats'),
     ustadz: (email) => get('ustadz', { email }),
     sessions: () => get('sessions'),
+    listUstadz: () => get('listUstadz'),
 
     // ---- Publik (POST) ----
     submitQuestion: (payload) => post('submitQuestion', payload),

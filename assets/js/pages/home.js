@@ -15,16 +15,33 @@ document.addEventListener('alpine:init', () => {
   /* ---------- Form Pertanyaan ---------- */
   Alpine.data('questionForm', () => ({
     categories: cfg.CATEGORIES,
+    ustadzList: [],
     loading: false,
     form: {
       author_name: '',
       author_city: '',
       category: cfg.CATEGORIES[1] || cfg.CATEGORIES[0], // default "Fiqih"
+      ustadz_preference: '',   // '' = biarkan admin/semua ustadz
       title: '',
       question: '',
       anonymous: false,
     },
     errors: { title: '', question: '' },
+
+    async init() {
+      await this.loadUstadz();
+    },
+
+    async loadUstadz() {
+      try {
+        const res = await API.listUstadz();
+        if (res && res.ok && Array.isArray(res.data)) {
+          this.ustadzList = res.data.filter((u) => u.active !== false);
+        }
+      } catch (_) {
+        // Abaikan error; pilihan ustadz tetap opsional
+      }
+    },
 
     validate() {
       this.errors.title = '';
@@ -64,6 +81,10 @@ document.addEventListener('alpine:init', () => {
         author_city: this.form.author_city.trim(),
         anonymous: this.form.anonymous,
       };
+      // Lampirkan preferensi ustadz jika dipilih
+      if (this.form.ustadz_preference) {
+        payload.ustadz_preference = this.form.ustadz_preference;
+      }
       // Bila dibuka via QR sesi (?sesi=Sxxxx), kaitkan pertanyaan ke sesi itu.
       // Bila tidak, backend otomatis memakai sesi yang sedang aktif.
       const sesi = UI.param('sesi');
@@ -79,6 +100,7 @@ document.addEventListener('alpine:init', () => {
         this.form.author_name = '';
         this.form.author_city = '';
         this.form.anonymous = false;
+        this.form.ustadz_preference = '';
       } else {
         UI.toast((res && res.message) || 'Gagal mengirim pertanyaan.', 'error');
       }

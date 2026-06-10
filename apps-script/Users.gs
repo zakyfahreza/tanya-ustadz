@@ -142,3 +142,18 @@ function getUstadz_(params) {
     answers: answers,
   });
 }
+
+/**
+ * GET listUstadz — daftar ustadz aktif untuk pilihan di form pertanyaan publik.
+ * Tidak memerlukan token (endpoint publik).
+ * Hanya mengembalikan name & email (tanpa data sensitif).
+ */
+function listUstadz_(params) {
+  var users = readRows_(CONFIG.SHEETS.USERS).filter(function (u) {
+    return String(u.role) === CONFIG.ROLES.USTADZ && toBool_(u.active);
+  }).map(function (u) {
+    return { name: u.name, email: u.email };
+  });
+  return ok_(users, 'OK', { total: users.length });
+}
+
