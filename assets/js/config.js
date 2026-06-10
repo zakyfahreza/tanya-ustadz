@@ -18,7 +18,7 @@ window.APP_CONFIG = {
    * URL Web App Apps Script. Ganti setelah deploy backend.
    * Contoh: 'https://script.google.com/macros/s/AKfycbx....../exec'
    */
-  API_BASE_URL: 'https://script.google.com/macros/s/AKfycbw2BZe4-xlunTkLl3tNCLB7Gk5FY5dxwJghdybd8T_mxxHDKnmVXvGRPTUhSeSazlFBMw/exec',
+  API_BASE_URL: 'https://script.google.com/macros/s/AKfycbzEu9XCkHhhgxyqmh5X1J0r5sTQCnzhrY3l3Q8DYOQbVjp-U9FZlR7HoVT4g586iScsWQ/exec',
 
   /** Domain publik untuk QR code & Open Graph */
   PUBLIC_URL: 'https://tanya.muslimsolo.id',
