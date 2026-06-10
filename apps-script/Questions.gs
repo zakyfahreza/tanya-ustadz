@@ -215,16 +215,22 @@ function submitQuestion_(params) {
   // bila kosong pakai sesi yang sedang aktif (otomatis saat kajian berlangsung).
   var sessionId = sanitizeText_(params.session_id) || getActiveSessionId_();
 
-  // Preferensi ustadz dari jama'ah (opsional)
+  // Preferensi ustadz dari jama'ah (opsional, tidak boleh gagalkan submit)
   var ustadzPrefEmail = '';
-  var ustadzPrefName = '';
-  if (params.ustadz_preference) {
-    var prefEmail = String(params.ustadz_preference).trim().toLowerCase();
-    var prefUser = findRow_(CONFIG.SHEETS.USERS, 'email', prefEmail);
-    if (prefUser && String(prefUser.role) === CONFIG.ROLES.USTADZ && toBool_(prefUser.active)) {
-      ustadzPrefEmail = prefUser.email;
-      ustadzPrefName  = prefUser.name;
+  var ustadzPrefName  = '';
+  try {
+    var rawPref = String(params.ustadz_preference || '').trim();
+    if (rawPref) {
+      var prefEmail = rawPref.toLowerCase();
+      var prefUser = findRow_(CONFIG.SHEETS.USERS, 'email', prefEmail);
+      if (prefUser && String(prefUser.role) === CONFIG.ROLES.USTADZ && toBool_(prefUser.active)) {
+        ustadzPrefEmail = String(prefUser.email);
+        ustadzPrefName  = String(prefUser.name);
+      }
     }
+  } catch (prefErr) {
+    // Abaikan error lookup ustadz — pertanyaan tetap tersimpan tanpa preferensi
+    logEvent_('PREF_LOOKUP_ERROR', { msg: prefErr.message });
   }
 
   var obj = {
@@ -237,9 +243,11 @@ function submitQuestion_(params) {
     answer: '',
     category: category,
     slug: uniqueSlug_(title),
-    status: CONFIG.STATUS.PENDING,
-    ustadz_email: '',
-    ustadz_name: '',
+    // Jika ada preferensi ustadz → langsung Assigned ke ustadz tersebut
+    // agar pertanyaan muncul di dashboard ustadz yang dipilih tanpa perlu admin
+    status: ustadzPrefEmail ? CONFIG.STATUS.ASSIGNED : CONFIG.STATUS.PENDING,
+    ustadz_email: ustadzPrefEmail,
+    ustadz_name: ustadzPrefName,
     author_name: anonymous ? '' : clamp_(sanitizeText_(params.author_name), 60),
     author_city: clamp_(sanitizeText_(params.author_city), 60),
     anonymous: anonymous ? 'TRUE' : 'FALSE',
