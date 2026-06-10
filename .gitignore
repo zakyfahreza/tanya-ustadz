@@ -1,0 +1,14 @@
+# Dependencies (jika sewaktu-waktu memakai tooling lokal)
+node_modules/
+
+# Berkas sistem & editor
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log
+.vscode/*
+!.vscode/settings.json
+
+# Berkas sementara
+_*.log
+_*.ps1

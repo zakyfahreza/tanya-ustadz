@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tulis Jawaban — Tanya Muslim Solo</title>
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#2f415b" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <script>
+    tailwind.config = { darkMode: 'class', theme: { extend: {
+      colors: { primary: { DEFAULT: '#2f415b', dark: '#22304a' }, accent: { DEFAULT: '#F59E0B' } },
+      fontFamily: { sans: ['Inter', 'sans-serif'] } } } };
+  </script>
+  <link rel="stylesheet" href="/assets/css/app.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css" />
+  <link rel="icon" href="/logo.png" type="image/png" />
+  <script src="/assets/js/config.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/ui.js"></script>
+  <script src="/assets/js/store.js"></script>
+  <script defer src="/assets/js/pages/admin/shell.js"></script>
+  <script defer src="/assets/js/pages/admin/answer.js"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 antialiased"
+      x-data="adminShell('questions')" x-init="boot()">
+
+  <header class="lg:hidden sticky top-0 z-30 bg-primary text-white flex items-center justify-between px-4 py-3">
+    <img src="/logo.png" alt="Tanya Muslim Solo" class="h-12" />
+    <span class="font-extrabold">Tulis Jawaban</span>
+    <button @click="$store.theme.toggle()"><i class="ti ti-moon text-2xl"></i></button>
+  </header>
+
+  <div class="lg:flex">
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+           class="fixed lg:sticky top-0 z-40 lg:z-0 h-screen w-64 bg-primary-dark text-white flex flex-col transition-transform">
+      <div class="p-5 flex items-center gap-2.5 border-b border-white/10">
+        <span class="grid place-items-center w-16 h-16"><img src="/logo.png" alt="Tanya Muslim Solo" class="w-full h-full object-contain" /></span>
+        <div class="leading-tight"><p class="font-extrabold text-sm">Tanya Muslim Solo</p><p class="text-xs text-teal-100/70">Panel Kelola</p></div>
+        <button @click="sidebarOpen = false" class="lg:hidden ml-auto text-xl">✕</button>
+      </div>
+      <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
+        <template x-for="link in navLinks" :key="link.key">
+          <a :href="link.href" :class="active === link.key ? 'bg-white/15 text-white' : 'text-teal-50/80 hover:bg-white/10'"
+             class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition">
+            <span x-html="link.icon"></span><span x-text="link.label"></span>
+          </a>
+        </template>
+      </nav>
+      <div class="p-3 border-t border-white/10">
+        <div class="px-3 py-2 text-xs text-teal-100/70"><p class="font-semibold text-white" x-text="user.name"></p><p x-text="user.role === 'admin' ? 'Administrator' : 'Ustadz'"></p></div>
+        <button @click="logout()" class="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-rose-100 hover:bg-rose-500/20 transition"><i class="ti ti-logout text-xl"></i><span>Keluar</span></button>
+      </div>
+    </aside>
+    <div x-show="sidebarOpen" @click="sidebarOpen = false" x-cloak class="fixed inset-0 z-30 bg-black/40 lg:hidden"></div>
+
+    <!-- ===== Konten ===== -->
+    <main class="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8 max-w-3xl" x-data="answerPage()" x-init="init()">
+      <a href="/admin/questions.html" class="inline-flex items-center gap-1 text-sm text-primary font-medium hover:underline mb-5">← Daftar Pertanyaan</a>
+
+      <div x-show="loading" class="space-y-4">
+        <div class="skeleton h-32 rounded-2xl"></div>
+        <div class="skeleton h-48 rounded-2xl"></div>
+      </div>
+
+      <div x-show="!loading && !item" x-cloak class="text-center py-16 text-slate-500 dark:text-slate-400">
+        <i class="ti ti-file-text inline-block mb-3 text-5xl text-slate-300 dark:text-slate-600"></i>
+        <p class="font-semibold">Pertanyaan tidak ditemukan</p>
+      </div>
+
+      <div x-show="!loading && item" x-cloak class="space-y-4">
+        <!-- Detail pertanyaan -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 ring-1 ring-slate-200 dark:ring-slate-700">
+          <div class="flex flex-wrap items-center gap-2 mb-2">
+            <span :class="UI.statusClass(item?.status)" class="text-xs font-semibold px-2.5 py-1 rounded-full" x-text="item?.status"></span>
+            <span :class="UI.categoryClass(item?.category)" class="text-xs font-semibold px-2.5 py-1 rounded-full" x-text="item?.category"></span>
+            <span class="text-xs text-slate-400 ml-auto" x-text="item?.id"></span>
+          </div>
+          <h1 class="text-xl font-extrabold leading-snug" x-text="item?.title"></h1>
+          <p class="mt-3 answer-body text-slate-700 dark:text-slate-200" x-html="UI.nl2br(item?.question)"></p>
+          <p class="mt-3 text-xs text-slate-400">
+            <span x-text="item?.anonymous ? 'Anonim' : (item?.author_name || '—')"></span>
+            <span x-show="item?.author_city" x-text="' · ' + item?.author_city"></span>
+            <span x-text="' · ' + UI.formatDate(item?.created_at)"></span>
+          </p>
+        </div>
+
+        <!-- Form jawaban -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 ring-1 ring-slate-200 dark:ring-slate-700">
+          <label class="block text-sm font-semibold mb-2">Jawaban Ustadz</label>
+          <textarea x-model="answer" rows="12"
+                    class="w-full rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-900 focus:ring-primary focus:border-primary answer-body"
+                    placeholder="Tulis jawaban di sini… Gunakan baris baru untuk paragraf."></textarea>
+          <p class="mt-1 text-xs text-slate-400"><span x-text="answer.length"></span> karakter</p>
+
+          <div class="mt-4 flex flex-wrap gap-2">
+            <button @click="save(true)" :disabled="saving" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl ring-1 ring-slate-200 dark:ring-slate-600 text-sm font-medium hover:ring-primary transition disabled:opacity-60"><i class="ti ti-device-floppy"></i>Simpan Draft</button>
+            <button @click="save(false)" :disabled="saving || !answer.trim()" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary-dark transition disabled:opacity-60"><i class="ti ti-check"></i>Simpan Jawaban</button>
+            <button @click="saveAndPublish()" :disabled="saving || !answer.trim()" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition disabled:opacity-60 ml-auto"><i class="ti ti-world"></i>Simpan & Publikasikan</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+    <nav class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-primary-dark text-white border-t border-white/10 flex shadow-[0_-2px_10px_rgba(0,0,0,0.15)]">
+      <template x-for="link in navLinks" :key="link.key">
+        <a :href="link.href" :class="active === link.key ? 'text-white bg-white/10' : 'text-teal-100/70'" class="flex-1 flex flex-col items-center justify-center gap-1 py-2">
+          <span x-html="link.icon"></span>
+          <span class="text-[10px] font-medium" x-text="link.short"></span>
+        </a>
+      </template>
+      <button @click="logout()" class="flex-1 flex flex-col items-center justify-center gap-1 py-2 text-rose-200">
+        <i class="ti ti-logout text-xl"></i>
+        <span class="text-[10px] font-medium">Keluar</span>
+      </button>
+    </nav>
+</body>
+</html>

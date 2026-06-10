@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arsip Jawaban — Tanya Muslim Solo</title>
+  <meta name="description" content="Arsip seluruh pertanyaan yang telah dijawab dan dipublikasikan oleh ustadz di Tanya Muslim Solo." />
+  <meta name="theme-color" content="#2f415b" />
+  <link rel="canonical" href="https://tanya.muslimsolo.id/arsip.html" />
+  <meta property="og:title" content="Arsip Jawaban — Tanya Muslim Solo" />
+  <meta property="og:description" content="Telusuri arsip tanya jawab Islami yang sudah dijawab ustadz." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com?plugins=line-clamp,forms"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: {
+        colors: { primary: { DEFAULT: '#2f415b', dark: '#22304a' }, accent: { DEFAULT: '#F59E0B' } },
+        fontFamily: { sans: ['Inter', 'sans-serif'] },
+      } },
+    };
+  </script>
+  <link rel="stylesheet" href="/assets/css/app.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css" />
+  <link rel="icon" href="/logo.png" type="image/png" />
+  <link rel="apple-touch-icon" href="/logo.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <script src="/assets/js/config.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/ui.js"></script>
+  <script src="/assets/js/store.js"></script>
+  <script defer src="/assets/js/pages/arsip.js"></script>
+  <script defer src="/assets/js/pwa.js"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 antialiased"
+      x-data x-init="$store.theme.init()">
+
+  <header class="bg-gradient-to-br from-primary to-primary-dark text-white">
+    <div class="max-w-5xl mx-auto px-4 py-5 flex items-center justify-between gap-2">
+      <a href="/" class="flex items-center gap-2.5 min-w-0">
+        <span class="grid place-items-center w-20 h-20 shrink-0"><img src="/logo.png" alt="Tanya Muslim Solo" class="w-full h-full object-contain" /></span>
+        <span class="font-extrabold text-lg truncate hidden sm:inline">Tanya Muslim Solo</span>
+      </a>
+      <nav class="flex items-center gap-1.5 sm:gap-2">
+        <a href="/" class="inline-flex text-xs sm:text-sm font-semibold px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-accent text-slate-900 hover:brightness-95 transition whitespace-nowrap">+ Tanya</a>
+        <button @click="$store.theme.toggle()" class="grid place-items-center w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/10 ring-1 ring-white/25 hover:bg-white/20 transition" aria-label="Ganti tema">
+          <i x-show="!$store.theme.dark" class="ti ti-moon text-xl"></i>
+          <i x-show="$store.theme.dark" x-cloak class="ti ti-sun text-xl"></i>
+        </button>
+      </nav>
+    </div>
+    <div class="max-w-5xl mx-auto px-4 pb-8">
+      <h1 class="text-2xl sm:text-3xl font-extrabold">Arsip Jawaban</h1>
+      <p class="mt-1 text-teal-50/90">Telusuri seluruh pertanyaan yang sudah dijawab ustadz.</p>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 py-8" x-data="arsipPage()" x-init="init()">
+    <!-- Kontrol -->
+    <div class="grid gap-3 sm:grid-cols-[1fr_auto_auto]">
+      <div class="relative">
+        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+          <i class="ti ti-search text-xl"></i>
+        </span>
+        <input type="search" x-model="q" @input.debounce.300ms="reset()"
+               placeholder="Cari pertanyaan atau jawaban…"
+               class="w-full pl-10 rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-800 focus:ring-primary focus:border-primary" />
+      </div>
+      <select x-model="cat" @change="reset()"
+              class="rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-800 focus:ring-primary focus:border-primary">
+        <option value="">Semua Kategori</option>
+        <template x-for="c in categories" :key="c"><option :value="c" x-text="c"></option></template>
+      </select>
+      <select x-model="sort" @change="reset()"
+              class="rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-800 focus:ring-primary focus:border-primary">
+        <option value="newest">Terbaru</option>
+        <option value="oldest">Terlama</option>
+      </select>
+    </div>
+
+    <p class="mt-4 text-sm text-slate-500 dark:text-slate-400" x-show="!loading" x-cloak>
+      Menampilkan <span class="font-semibold" x-text="paged.length"></span> dari
+      <span class="font-semibold" x-text="filtered.length"></span> jawaban.
+    </p>
+
+    <!-- Skeleton -->
+    <div x-show="loading" class="mt-5 grid sm:grid-cols-2 gap-4">
+      <template x-for="i in 6" :key="i">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 ring-1 ring-slate-200 dark:ring-slate-700">
+          <div class="skeleton h-4 w-20 rounded mb-3"></div>
+          <div class="skeleton h-5 w-full rounded mb-2"></div>
+          <div class="skeleton h-4 w-2/3 rounded"></div>
+        </div>
+      </template>
+    </div>
+
+    <!-- Empty -->
+    <div x-show="!loading && filtered.length === 0" x-cloak class="text-center py-16">
+      <i class="ti ti-search block mb-3 text-5xl text-slate-300 dark:text-slate-600"></i>
+      <p class="font-semibold">Tidak ada hasil</p>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Coba ubah kata kunci atau filter kategori.</p>
+    </div>
+
+    <!-- Grid -->
+    <div x-show="!loading && paged.length > 0" class="mt-5 grid sm:grid-cols-2 gap-4">
+      <template x-for="item in paged" :key="item.id">
+        <div class="fade-in bg-white dark:bg-slate-800 rounded-2xl p-5 ring-1 ring-slate-200 dark:ring-slate-700 hover:shadow-md transition flex flex-col">
+          <div class="flex items-center justify-between gap-2">
+            <span :class="UI.categoryClass(item.category)" class="text-xs font-semibold px-2.5 py-1 rounded-full" x-text="item.category"></span>
+            <span class="text-xs text-slate-400" x-text="UI.formatDate(item.published_at)"></span>
+          </div>
+          <h3 class="mt-3 font-bold leading-snug clamp-2" x-text="item.title"></h3>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400 clamp-3" x-text="UI.excerpt(item.answer, 150)"></p>
+          <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
+            <span class="text-xs text-slate-400" x-text="item.ustadz_name || 'Ustadz'"></span>
+            <a :href="'/q.html?slug=' + item.slug" class="text-sm font-semibold text-primary hover:underline">Baca Jawaban →</a>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <!-- Pagination -->
+    <div x-show="!loading && totalPages > 1" x-cloak class="mt-8 flex items-center justify-center gap-2">
+      <button @click="prev()" :disabled="page === 1"
+              class="px-3 py-2 rounded-lg ring-1 ring-slate-200 dark:ring-slate-700 bg-white dark:bg-slate-800 disabled:opacity-40 hover:ring-primary transition">←</button>
+      <span class="text-sm font-medium">Hal <span x-text="page"></span> / <span x-text="totalPages"></span></span>
+      <button @click="next()" :disabled="page === totalPages"
+              class="px-3 py-2 rounded-lg ring-1 ring-slate-200 dark:ring-slate-700 bg-white dark:bg-slate-800 disabled:opacity-40 hover:ring-primary transition">→</button>
+    </div>
+  </main>
+
+  <footer class="border-t border-slate-200 dark:border-slate-800 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+    <p>© <span x-text="new Date().getFullYear()"></span> Tanya Muslim Solo</p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kelola Pertanyaan — Tanya Muslim Solo</title>
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#2f415b" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,line-clamp"></script>
+  <script>
+    tailwind.config = { darkMode: 'class', theme: { extend: {
+      colors: { primary: { DEFAULT: '#2f415b', dark: '#22304a' }, accent: { DEFAULT: '#F59E0B' } },
+      fontFamily: { sans: ['Inter', 'sans-serif'] } } } };
+  </script>
+  <link rel="stylesheet" href="/assets/css/app.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css" />
+  <link rel="icon" href="/logo.png" type="image/png" />
+  <script src="/assets/js/config.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/ui.js"></script>
+  <script src="/assets/js/store.js"></script>
+  <script defer src="/assets/js/pages/admin/shell.js"></script>
+  <script defer src="/assets/js/pages/admin/questions.js"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 antialiased"
+      x-data="adminShell('questions')" x-init="boot()">
+
+  <header class="lg:hidden sticky top-0 z-30 bg-primary text-white flex items-center justify-between px-4 py-3">
+    <img src="/logo.png" alt="Tanya Muslim Solo" class="h-12" />
+    <span class="font-extrabold">Kelola Pertanyaan</span>
+    <button @click="$store.theme.toggle()"><i class="ti ti-moon text-2xl"></i></button>
+  </header>
+
+  <div class="lg:flex">
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+           class="fixed lg:sticky top-0 z-40 lg:z-0 h-screen w-64 bg-primary-dark text-white flex flex-col transition-transform">
+      <div class="p-5 flex items-center gap-2.5 border-b border-white/10">
+        <span class="grid place-items-center w-16 h-16"><img src="/logo.png" alt="Tanya Muslim Solo" class="w-full h-full object-contain" /></span>
+        <div class="leading-tight"><p class="font-extrabold text-sm">Tanya Muslim Solo</p><p class="text-xs text-teal-100/70">Panel Kelola</p></div>
+        <button @click="sidebarOpen = false" class="lg:hidden ml-auto text-xl">✕</button>
+      </div>
+      <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
+        <template x-for="link in navLinks" :key="link.key">
+          <a :href="link.href" :class="active === link.key ? 'bg-white/15 text-white' : 'text-teal-50/80 hover:bg-white/10'"
+             class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition">
+            <span x-html="link.icon"></span><span x-text="link.label"></span>
+          </a>
+        </template>
+      </nav>
+      <div class="p-3 border-t border-white/10">
+        <div class="px-3 py-2 text-xs text-teal-100/70"><p class="font-semibold text-white" x-text="user.name"></p><p x-text="user.role === 'admin' ? 'Administrator' : 'Ustadz'"></p></div>
+        <button @click="logout()" class="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-rose-100 hover:bg-rose-500/20 transition"><i class="ti ti-logout text-xl"></i><span>Keluar</span></button>
+      </div>
+    </aside>
+    <div x-show="sidebarOpen" @click="sidebarOpen = false" x-cloak class="fixed inset-0 z-30 bg-black/40 lg:hidden"></div>
+
+    <!-- ===== Konten ===== -->
+    <main class="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8" x-data="questionsPage()" x-init="init()">
+      <h1 class="text-2xl font-extrabold mb-1">Kelola Pertanyaan</h1>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mb-6" x-text="isAdmin ? 'Semua pertanyaan masuk.' : 'Pertanyaan yang ditugaskan kepada Anda.'"></p>
+
+      <!-- Filter -->
+      <div class="grid gap-3 sm:grid-cols-[1fr_auto] mb-4">
+        <div class="relative">
+          <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"><i class="ti ti-search text-xl"></i></span>
+          <input type="search" x-model="q" @input.debounce.300ms="apply()" placeholder="Cari judul / penanya…"
+                 class="w-full pl-10 rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-800 focus:ring-primary focus:border-primary" />
+        </div>
+        <select x-model="status" @change="apply()" class="rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-800 focus:ring-primary focus:border-primary">
+          <option value="">Semua Status</option>
+          <option value="Pending">Pending</option>
+          <option value="Assigned">Assigned</option>
+          <option value="Answered">Answered</option>
+          <option value="Published">Published</option>
+        </select>
+      </div>
+
+      <!-- Skeleton -->
+      <div x-show="loading" class="space-y-3">
+        <template x-for="i in 4" :key="i"><div class="skeleton h-24 rounded-2xl"></div></template>
+      </div>
+
+      <!-- Empty -->
+      <div x-show="!loading && filtered.length === 0" x-cloak class="text-center py-16 text-slate-500 dark:text-slate-400">
+        <i class="ti ti-inbox inline-block mb-3 text-5xl text-slate-300 dark:text-slate-600"></i>
+        <p class="font-semibold">Tidak ada pertanyaan</p>
+      </div>
+
+      <!-- List -->
+      <div x-show="!loading" class="space-y-3">
+        <template x-for="item in filtered" :key="item.id">
+          <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 ring-1 ring-slate-200 dark:ring-slate-700">
+            <div class="flex flex-wrap items-center gap-2 mb-2">
+              <span :class="UI.statusClass(item.status)" class="text-xs font-semibold px-2.5 py-1 rounded-full" x-text="item.status"></span>
+              <span :class="UI.categoryClass(item.category)" class="text-xs font-semibold px-2.5 py-1 rounded-full" x-text="item.category"></span>
+              <span class="text-xs text-slate-400 ml-auto" x-text="item.id"></span>
+            </div>
+            <h3 class="font-bold leading-snug" x-text="item.title"></h3>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400 clamp-2" x-text="UI.excerpt(item.question, 160)"></p>
+            <div class="mt-2 text-xs text-slate-400">
+              <span x-text="item.anonymous ? 'Anonim' : (item.author_name || '—')"></span>
+              <span x-show="item.author_city" x-text="' · ' + item.author_city"></span>
+              <span x-show="item.ustadz_name" x-text="' · ' + item.ustadz_name"></span>
+              <span x-text="' · ' + UI.formatDate(item.created_at)"></span>
+            </div>
+
+            <!-- Aksi -->
+            <div class="mt-3 flex flex-wrap gap-2">
+              <a :href="'/admin/answer.html?id=' + item.id" class="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg bg-primary text-white hover:bg-primary-dark transition"><i class="ti ti-pencil"></i>Jawab</a>
+              <template x-if="isAdmin">
+                <button @click="openAssign(item)" class="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg ring-1 ring-slate-200 dark:ring-slate-600 hover:ring-primary transition"><i class="ti ti-user-plus"></i>Assign</button>
+              </template>
+              <template x-if="item.status !== 'Published' && item.answer">
+                <button @click="publish(item)" class="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition"><i class="ti ti-world"></i>Publish</button>
+              </template>
+              <template x-if="item.status === 'Published'">
+                <button @click="unpublish(item)" class="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg ring-1 ring-amber-300 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition"><i class="ti ti-arrow-back-up"></i>Unpublish</button>
+              </template>
+              <template x-if="item.status === 'Published'">
+                <a :href="'/q.html?slug=' + item.slug" target="_blank" class="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg ring-1 ring-slate-200 dark:ring-slate-600 hover:ring-primary transition"><i class="ti ti-eye"></i>Lihat</a>
+              </template>
+              <template x-if="isAdmin">
+                <button @click="remove(item)" class="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg ring-1 ring-rose-200 text-rose-600 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition ml-auto"><i class="ti ti-trash"></i>Hapus</button>
+              </template>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- ===== Modal Assign ===== -->
+      <div x-show="assignModal" x-cloak class="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4" @click.self="assignModal = false">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 w-full max-w-sm">
+          <h3 class="font-bold text-lg mb-1">Tugaskan Ustadz</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mb-4 clamp-2" x-text="current?.title"></p>
+          <select x-model="assignEmail" class="w-full rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-900 focus:ring-primary focus:border-primary">
+            <option value="">— Pilih ustadz —</option>
+            <template x-for="u in ustadzList" :key="u.email">
+              <option :value="u.email" x-text="u.name"></option>
+            </template>
+          </select>
+          <div class="mt-5 flex gap-2 justify-end">
+            <button @click="assignModal = false" class="px-4 py-2 rounded-xl ring-1 ring-slate-200 dark:ring-slate-600 text-sm font-medium">Batal</button>
+            <button @click="doAssign()" :disabled="!assignEmail || saving" class="px-4 py-2 rounded-xl bg-primary text-white text-sm font-semibold disabled:opacity-60">Tugaskan</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+    <nav class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-primary-dark text-white border-t border-white/10 flex shadow-[0_-2px_10px_rgba(0,0,0,0.15)]">
+      <template x-for="link in navLinks" :key="link.key">
+        <a :href="link.href" :class="active === link.key ? 'text-white bg-white/10' : 'text-teal-100/70'" class="flex-1 flex flex-col items-center justify-center gap-1 py-2">
+          <span x-html="link.icon"></span>
+          <span class="text-[10px] font-medium" x-text="link.short"></span>
+        </a>
+      </template>
+      <button @click="logout()" class="flex-1 flex flex-col items-center justify-center gap-1 py-2 text-rose-200">
+        <i class="ti ti-logout text-xl"></i>
+        <span class="text-[10px] font-medium">Keluar</span>
+      </button>
+    </nav>
+</body>
+</html>

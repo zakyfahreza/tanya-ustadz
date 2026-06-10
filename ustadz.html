@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profil Ustadz — Tanya Muslim Solo</title>
+  <meta name="description" content="Profil ustadz dan daftar jawaban di Tanya Muslim Solo." />
+  <meta name="theme-color" content="#2f415b" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com?plugins=line-clamp,forms"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: {
+        colors: { primary: { DEFAULT: '#2f415b', dark: '#22304a' }, accent: { DEFAULT: '#F59E0B' } },
+        fontFamily: { sans: ['Inter', 'sans-serif'] },
+      } },
+    };
+  </script>
+  <link rel="stylesheet" href="/assets/css/app.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css" />
+  <link rel="icon" href="/logo.png" type="image/png" />
+  <link rel="apple-touch-icon" href="/logo.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <script src="/assets/js/config.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/ui.js"></script>
+  <script src="/assets/js/store.js"></script>
+  <script defer src="/assets/js/pages/ustadz.js"></script>
+  <script defer src="/assets/js/pwa.js"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 antialiased"
+      x-data x-init="$store.theme.init()">
+
+  <header class="bg-gradient-to-br from-primary to-primary-dark text-white">
+    <div class="max-w-4xl mx-auto px-4 py-5 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2.5">
+        <span class="grid place-items-center w-20 h-20 shrink-0"><img src="/logo.png" alt="Tanya Muslim Solo" class="w-full h-full object-contain" /></span>
+        <span class="font-extrabold text-lg">Tanya Muslim Solo</span>
+      </a>
+      <button @click="$store.theme.toggle()" class="grid place-items-center w-10 h-10 rounded-lg hover:bg-white/15 transition" aria-label="Ganti tema">
+        <i x-show="!$store.theme.dark" class="ti ti-moon text-xl"></i>
+        <i x-show="$store.theme.dark" x-cloak class="ti ti-sun text-xl"></i>
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-8" x-data="ustadzPage()" x-init="init()">
+    <a href="/arsip.html" class="inline-flex items-center gap-1 text-sm text-primary font-medium hover:underline mb-5">← Kembali ke Arsip</a>
+
+    <div x-show="loading" class="space-y-4">
+      <div class="skeleton h-24 w-full rounded-2xl"></div>
+      <div class="skeleton h-20 w-full rounded-2xl"></div>
+    </div>
+
+    <div x-show="!loading && !profile" x-cloak class="text-center py-16">
+      <i class="ti ti-user inline-block mb-3 text-5xl text-slate-300 dark:text-slate-600"></i>
+      <p class="font-semibold">Ustadz tidak ditemukan</p>
+    </div>
+
+    <div x-show="!loading && profile" x-cloak class="fade-in">
+      <!-- Header profil -->
+      <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 ring-1 ring-slate-200 dark:ring-slate-700 flex items-center gap-4">
+        <div class="grid place-items-center w-16 h-16 rounded-full bg-primary/10 text-primary text-2xl font-bold" x-text="initials"></div>
+        <div>
+          <h1 class="text-xl font-extrabold" x-text="profile?.name"></h1>
+          <p class="text-sm text-slate-500 dark:text-slate-400">
+            <span class="font-semibold text-primary" x-text="answers.length"></span> jawaban dipublikasikan
+          </p>
+        </div>
+      </div>
+
+      <!-- Daftar jawaban -->
+      <h2 class="mt-8 text-lg font-extrabold mb-3">Daftar Jawaban</h2>
+      <div x-show="answers.length === 0" class="text-center py-10 text-slate-500 dark:text-slate-400">
+        <i class="ti ti-inbox inline-block mb-3 text-5xl text-slate-300 dark:text-slate-600"></i>
+        Belum ada jawaban dipublikasikan.
+      </div>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <template x-for="a in answers" :key="a.id">
+          <a :href="'/q.html?slug=' + a.slug" class="bg-white dark:bg-slate-800 rounded-2xl p-5 ring-1 ring-slate-200 dark:ring-slate-700 hover:ring-primary hover:shadow-md transition flex flex-col">
+            <div class="flex items-center justify-between gap-2">
+              <span :class="UI.categoryClass(a.category)" class="text-xs font-semibold px-2.5 py-1 rounded-full" x-text="a.category"></span>
+              <span class="text-xs text-slate-400" x-text="UI.formatDate(a.published_at)"></span>
+            </div>
+            <h3 class="mt-3 font-bold leading-snug clamp-2" x-text="a.title"></h3>
+            <p class="mt-2 text-sm text-slate-500 dark:text-slate-400 clamp-2" x-text="UI.excerpt(a.answer, 120)"></p>
+          </a>
+        </template>
+      </div>
+    </div>
+  </main>
+
+  <footer class="border-t border-slate-200 dark:border-slate-800 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+    <p>© <span x-text="new Date().getFullYear()"></span> Tanya Muslim Solo</p>
+  </footer>
+</body>
+</html>

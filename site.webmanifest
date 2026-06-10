@@ -1,0 +1,21 @@
+{
+  "name": "Tanya Muslim Solo",
+  "short_name": "Tanya Muslim",
+  "description": "Platform tanya jawab Islami: tanyakan masalah agama kepada ustadz dan baca jawaban yang bermanfaat.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0F766E",
+  "theme_color": "#0F766E",
+  "lang": "id",
+  "categories": ["education", "lifestyle", "books"],
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

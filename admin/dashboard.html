@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Tanya Muslim Solo</title>
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#2f415b" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <script>
+    tailwind.config = { darkMode: 'class', theme: { extend: {
+      colors: { primary: { DEFAULT: '#2f415b', dark: '#22304a' }, accent: { DEFAULT: '#F59E0B' } },
+      fontFamily: { sans: ['Inter', 'sans-serif'] } } } };
+  </script>
+  <link rel="stylesheet" href="/assets/css/app.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css" />
+  <link rel="icon" href="/logo.png" type="image/png" />
+  <script src="/assets/js/config.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/ui.js"></script>
+  <script src="/assets/js/store.js"></script>
+  <script defer src="/assets/js/pages/admin/shell.js"></script>
+  <script defer src="/assets/js/pages/admin/dashboard.js"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 antialiased"
+      x-data="adminShell('dashboard')" x-init="boot()">
+
+  <!-- ===== Topbar (mobile) ===== -->
+  <header class="lg:hidden sticky top-0 z-30 bg-primary text-white flex items-center justify-between px-4 py-3">
+    <img src="/logo.png" alt="Tanya Muslim Solo" class="h-12" />
+    <span class="font-extrabold">Tanya Muslim Solo</span>
+    <button @click="$store.theme.toggle()"><i class="ti ti-moon text-2xl"></i></button>
+  </header>
+
+  <div class="lg:flex">
+    <!-- ===== Sidebar ===== -->
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+           class="fixed lg:sticky top-0 z-40 lg:z-0 h-screen w-64 bg-primary-dark text-white flex flex-col transition-transform">
+      <div class="p-5 flex items-center gap-2.5 border-b border-white/10">
+        <span class="grid place-items-center w-16 h-16"><img src="/logo.png" alt="Tanya Muslim Solo" class="w-full h-full object-contain" /></span>
+        <div class="leading-tight">
+          <p class="font-extrabold text-sm">Tanya Muslim Solo</p>
+          <p class="text-xs text-teal-100/70">Panel Kelola</p>
+        </div>
+        <button @click="sidebarOpen = false" class="lg:hidden ml-auto text-xl">✕</button>
+      </div>
+
+      <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
+        <template x-for="link in navLinks" :key="link.key">
+          <a :href="link.href"
+             :class="active === link.key ? 'bg-white/15 text-white' : 'text-teal-50/80 hover:bg-white/10'"
+             class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition">
+            <span x-html="link.icon"></span><span x-text="link.label"></span>
+          </a>
+        </template>
+      </nav>
+
+      <div class="p-3 border-t border-white/10">
+        <div class="px-3 py-2 text-xs text-teal-100/70">
+          <p class="font-semibold text-white" x-text="user.name"></p>
+          <p x-text="user.role === 'admin' ? 'Administrator' : 'Ustadz'"></p>
+        </div>
+        <button @click="logout()" class="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-rose-100 hover:bg-rose-500/20 transition">
+          Keluar
+        </button>
+      </div>
+    </aside>
+
+    <!-- Overlay mobile -->
+    <div x-show="sidebarOpen" @click="sidebarOpen = false" x-cloak class="fixed inset-0 z-30 bg-black/40 lg:hidden"></div>
+
+    <!-- ===== Konten ===== -->
+    <main class="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8" x-data="dashboardPage()" x-init="load()">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="text-2xl font-extrabold">Dashboard</h1>
+          <p class="text-sm text-slate-500 dark:text-slate-400">Ringkasan aktivitas tanya jawab.</p>
+        </div>
+        <button @click="$store.theme.toggle()" class="hidden lg:grid place-items-center w-10 h-10 rounded-lg bg-white dark:bg-slate-800 ring-1 ring-slate-200 dark:ring-slate-700"><i class="ti ti-moon text-2xl"></i></button>
+      </div>
+
+      <!-- Skeleton -->
+      <div x-show="loading" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <template x-for="i in 4" :key="i"><div class="skeleton h-28 rounded-2xl"></div></template>
+      </div>
+
+      <!-- Kartu statistik -->
+      <div x-show="!loading" x-cloak class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <template x-for="card in cards" :key="card.label">
+          <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 ring-1 ring-slate-200 dark:ring-slate-700">
+            <div class="flex items-center justify-between">
+              <span x-html="card.icon" class="text-primary dark:text-teal-300"></span>
+              <span :class="card.badge" class="text-xs font-semibold px-2 py-0.5 rounded-full" x-text="card.label"></span>
+            </div>
+            <p class="mt-3 text-3xl font-extrabold" x-text="card.value"></p>
+          </div>
+        </template>
+      </div>
+
+      <!-- Aksi cepat & kategori -->
+      <div x-show="!loading" x-cloak class="mt-6 grid lg:grid-cols-3 gap-4">
+        <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl p-5 ring-1 ring-slate-200 dark:ring-slate-700">
+          <h2 class="font-bold mb-3">Distribusi Kategori</h2>
+          <div class="space-y-2">
+            <template x-for="row in categoryRows" :key="row.name">
+              <div>
+                <div class="flex justify-between text-sm mb-1">
+                  <span x-text="row.name"></span><span class="text-slate-400" x-text="row.count"></span>
+                </div>
+                <div class="h-2 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
+                  <div class="h-full bg-primary rounded-full" :style="'width:' + row.pct + '%'"></div>
+                </div>
+              </div>
+            </template>
+            <p x-show="categoryRows.length === 0" class="text-sm text-slate-400">Belum ada data.</p>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 ring-1 ring-slate-200 dark:ring-slate-700">
+          <h2 class="font-bold mb-3">Aksi Cepat</h2>
+          <div class="space-y-2">
+            <a href="/admin/questions.html?status=Pending" class="flex items-center gap-2 px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900 hover:ring-1 hover:ring-primary transition text-sm font-medium"><i class="ti ti-inbox text-xl text-primary dark:text-teal-300"></i><span>Pertanyaan masuk (<span x-text="stats.pending || 0"></span>)</span></a>
+            <a href="/admin/questions.html?status=Answered" class="flex items-center gap-2 px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900 hover:ring-1 hover:ring-primary transition text-sm font-medium"><i class="ti ti-circle-check text-xl text-primary dark:text-teal-300"></i><span>Menunggu publikasi (<span x-text="stats.answered || 0"></span>)</span></a>
+            <a href="/" target="_blank" class="flex items-center gap-2 px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900 hover:ring-1 hover:ring-primary transition text-sm font-medium"><i class="ti ti-world text-xl text-primary dark:text-teal-300"></i><span>Lihat situs publik</span></a>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+    <nav class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-primary-dark text-white border-t border-white/10 flex shadow-[0_-2px_10px_rgba(0,0,0,0.15)]">
+      <template x-for="link in navLinks" :key="link.key">
+        <a :href="link.href" :class="active === link.key ? 'text-white bg-white/10' : 'text-teal-100/70'" class="flex-1 flex flex-col items-center justify-center gap-1 py-2">
+          <span x-html="link.icon"></span>
+          <span class="text-[10px] font-medium" x-text="link.short"></span>
+        </a>
+      </template>
+      <button @click="logout()" class="flex-1 flex flex-col items-center justify-center gap-1 py-2 text-rose-200">
+        <i class="ti ti-logout text-xl"></i>
+        <span class="text-[10px] font-medium">Keluar</span>
+      </button>
+    </nav>
+</body>
+</html>

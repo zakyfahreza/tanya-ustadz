@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Masuk — Tanya Muslim Solo</title>
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#2f415b" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: {
+        colors: { primary: { DEFAULT: '#2f415b', dark: '#22304a' }, accent: { DEFAULT: '#F59E0B' } },
+        fontFamily: { sans: ['Inter', 'sans-serif'] },
+      } },
+    };
+  </script>
+  <link rel="stylesheet" href="/assets/css/app.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css" />
+  <link rel="icon" href="/logo.png" type="image/png" />
+  <script src="/assets/js/config.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/ui.js"></script>
+  <script src="/assets/js/store.js"></script>
+  <script defer src="/assets/js/pages/admin/login.js"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-primary to-primary-dark text-slate-800 antialiased flex items-center justify-center px-4"
+      x-data="adminLogin()" x-init="init()">
+
+  <div class="w-full max-w-sm">
+    <div class="text-center text-white mb-6">
+      <span class="grid place-items-center w-28 h-28 mx-auto mb-3"><img src="/logo.png" alt="Tanya Muslim Solo" class="w-full h-full object-contain" /></span>
+      <h1 class="text-xl font-extrabold">Tanya Muslim Solo</h1>
+      <p class="text-sm text-teal-50/80">Panel Admin & Ustadz</p>
+    </div>
+
+    <form @submit.prevent="submit()" class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 grid gap-4">
+      <div>
+        <label class="block text-sm font-medium mb-1 dark:text-slate-200">Username / Email</label>
+        <input type="text" x-model="username" autocomplete="username" required
+               class="w-full rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 focus:ring-primary focus:border-primary"
+               placeholder="admin atau admin@tms.id" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1 dark:text-slate-200">Password</label>
+        <div class="relative">
+          <input :type="show ? 'text' : 'password'" x-model="password" autocomplete="current-password" required
+                 class="w-full pr-10 rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 focus:ring-primary focus:border-primary"
+                 placeholder="••••••••" />
+          <button type="button" @click="show = !show" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" aria-label="Tampilkan/sembunyikan password">
+            <i x-show="!show" class="ti ti-eye text-xl"></i>
+            <i x-show="show" x-cloak class="ti ti-eye-off text-xl"></i>
+          </button>
+        </div>
+      </div>
+
+      <button type="submit" :disabled="loading"
+              class="bg-primary hover:bg-primary-dark text-white font-semibold rounded-xl px-5 py-3 transition disabled:opacity-60 flex items-center justify-center gap-2">
+        <span x-show="!loading">Masuk</span>
+        <span x-show="loading" x-cloak class="flex items-center gap-2">
+          <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
+          Memproses…
+        </span>
+      </button>
+
+      <a href="/" class="text-center text-sm text-slate-500 dark:text-slate-400 hover:text-primary">← Kembali ke situs</a>
+    </form>
+  </div>
+</body>
+</html>

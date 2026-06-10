@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kategori & Kajian — Tanya Muslim Solo</title>
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#2f415b" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <script>
+    tailwind.config = { darkMode: 'class', theme: { extend: {
+      colors: { primary: { DEFAULT: '#2f415b', dark: '#22304a' }, accent: { DEFAULT: '#F59E0B' } },
+      fontFamily: { sans: ['Inter', 'sans-serif'] } } } };
+  </script>
+  <link rel="stylesheet" href="/assets/css/app.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css" />
+  <link rel="icon" href="/logo.png" type="image/png" />
+  <script src="/assets/js/config.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/ui.js"></script>
+  <script src="/assets/js/store.js"></script>
+  <script defer src="/assets/js/pages/admin/shell.js"></script>
+  <script defer src="/assets/js/pages/admin/categories.js"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 antialiased"
+      x-data="adminShell('categories', true)" x-init="boot()">
+
+  <header class="lg:hidden sticky top-0 z-30 bg-primary text-white flex items-center justify-between px-4 py-3">
+    <img src="/logo.png" alt="Tanya Muslim Solo" class="h-12" />
+    <span class="font-extrabold">Kategori & Kajian</span>
+    <button @click="$store.theme.toggle()"><i class="ti ti-moon text-2xl"></i></button>
+  </header>
+
+  <div class="lg:flex">
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+           class="fixed lg:sticky top-0 z-40 lg:z-0 h-screen w-64 bg-primary-dark text-white flex flex-col transition-transform">
+      <div class="p-5 flex items-center gap-2.5 border-b border-white/10">
+        <span class="grid place-items-center w-16 h-16"><img src="/logo.png" alt="Tanya Muslim Solo" class="w-full h-full object-contain" /></span>
+        <div class="leading-tight"><p class="font-extrabold text-sm">Tanya Muslim Solo</p><p class="text-xs text-teal-100/70">Panel Kelola</p></div>
+        <button @click="sidebarOpen = false" class="lg:hidden ml-auto text-xl">✕</button>
+      </div>
+      <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
+        <template x-for="link in navLinks" :key="link.key">
+          <a :href="link.href" :class="active === link.key ? 'bg-white/15 text-white' : 'text-teal-50/80 hover:bg-white/10'"
+             class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition">
+            <span x-html="link.icon"></span><span x-text="link.label"></span>
+          </a>
+        </template>
+      </nav>
+      <div class="p-3 border-t border-white/10">
+        <div class="px-3 py-2 text-xs text-teal-100/70"><p class="font-semibold text-white" x-text="user.name"></p><p x-text="user.role === 'admin' ? 'Administrator' : 'Ustadz'"></p></div>
+        <button @click="logout()" class="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-rose-100 hover:bg-rose-500/20 transition"><i class="ti ti-logout text-xl"></i><span>Keluar</span></button>
+      </div>
+    </aside>
+    <div x-show="sidebarOpen" @click="sidebarOpen = false" x-cloak class="fixed inset-0 z-30 bg-black/40 lg:hidden"></div>
+
+    <!-- ===== Konten ===== -->
+    <main class="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8 max-w-3xl" x-data="categoriesPage()" x-init="load()">
+      <h1 class="text-2xl font-extrabold mb-4">Kategori & Sesi Kajian</h1>
+
+      <!-- Tabs -->
+      <div class="flex gap-2 mb-5">
+        <button @click="tab = 'cat'" :class="tab === 'cat' ? 'bg-primary text-white' : 'bg-white dark:bg-slate-800 ring-1 ring-slate-200 dark:ring-slate-700'" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition"><i class="ti ti-tag"></i>Kategori</button>
+        <button @click="tab = 'ses'" :class="tab === 'ses' ? 'bg-primary text-white' : 'bg-white dark:bg-slate-800 ring-1 ring-slate-200 dark:ring-slate-700'" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition"><i class="ti ti-calendar"></i>Sesi Kajian</button>
+      </div>
+
+      <!-- ===== Tab Kategori ===== -->
+      <div x-show="tab === 'cat'">
+        <form @submit.prevent="addCategory()" class="flex gap-2 mb-4">
+          <input type="text" x-model="newCat" placeholder="Nama kategori baru…" class="flex-1 rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-800 focus:ring-primary focus:border-primary" />
+          <button class="inline-flex items-center gap-1.5 bg-primary text-white font-semibold px-4 rounded-xl text-sm"><i class="ti ti-plus"></i>Tambah</button>
+        </form>
+        <div class="bg-white dark:bg-slate-800 rounded-2xl ring-1 ring-slate-200 dark:ring-slate-700 divide-y divide-slate-100 dark:divide-slate-700 overflow-hidden">
+          <template x-for="c in categories" :key="c.id">
+            <div class="flex items-center gap-3 p-4">
+              <span class="font-medium" x-text="c.name"></span>
+              <span class="text-xs text-slate-400" x-text="c.id"></span>
+              <button @click="removeCategory(c)" class="ml-auto px-3 py-1.5 rounded-lg text-sm ring-1 ring-rose-200 text-rose-600 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition inline-flex items-center gap-1.5"><i class="ti ti-trash"></i>Hapus</button>
+            </div>
+          </template>
+          <p x-show="categories.length === 0" class="p-4 text-sm text-slate-400">Belum ada kategori.</p>
+        </div>
+      </div>
+
+      <!-- ===== Tab Sesi Kajian ===== -->
+      <div x-show="tab === 'ses'" x-cloak>
+        <button @click="openSession()" class="inline-flex items-center gap-1.5 mb-4 bg-primary text-white font-semibold px-4 py-2.5 rounded-xl text-sm"><i class="ti ti-plus"></i>Sesi Kajian</button>
+        <div class="space-y-3">
+          <template x-for="s in sessions" :key="s.id">
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 ring-1 ring-slate-200 dark:ring-slate-700">
+              <div class="flex items-center gap-2">
+                <span x-show="s.active" class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200">Aktif</span>
+                <span class="text-xs text-slate-400 ml-auto" x-text="s.id"></span>
+              </div>
+              <h3 class="mt-1 font-bold" x-text="s.title"></h3>
+              <p class="text-sm text-slate-500 dark:text-slate-400" x-text="s.ustadz_name"></p>
+              <p class="text-xs text-slate-400 mt-1"><span x-text="s.location"></span></p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <button @click="copyLive(s)" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm bg-primary text-white hover:bg-primary-dark transition"><i class="ti ti-link"></i>Salin Link MC</button>
+                <a :href="'/live.html?sesi=' + s.id" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm ring-1 ring-slate-200 dark:ring-slate-600 hover:ring-primary transition"><i class="ti ti-external-link"></i>Buka Live</a>
+                <button @click="openSession(s)" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm ring-1 ring-slate-200 dark:ring-slate-600 hover:ring-primary transition"><i class="ti ti-pencil"></i>Edit</button>
+                <button @click="removeSession(s)" class="px-3 py-1.5 rounded-lg text-sm ring-1 ring-rose-200 text-rose-600 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition inline-flex items-center gap-1.5"><i class="ti ti-trash"></i>Hapus</button>
+              </div>
+            </div>
+          </template>
+          <p x-show="sessions.length === 0" class="text-sm text-slate-400">Belum ada sesi kajian.</p>
+        </div>
+
+        <!-- Modal sesi -->
+        <div x-show="sessionModal" x-cloak class="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4" @click.self="sessionModal = false">
+          <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 w-full max-w-sm grid gap-3">
+            <h3 class="font-bold text-lg" x-text="sForm.id ? 'Edit Sesi' : 'Sesi Kajian Baru'"></h3>
+            <input type="text" x-model="sForm.title" placeholder="Judul kajian" class="w-full rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-900 focus:ring-primary focus:border-primary" />
+            <input type="text" x-model="sForm.ustadz_name" placeholder="Nama ustadz" class="w-full rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-900 focus:ring-primary focus:border-primary" />
+            <input type="date" x-model="sForm.date" class="w-full rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-900 focus:ring-primary focus:border-primary" />
+            <input type="text" x-model="sForm.location" placeholder="Lokasi" class="w-full rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-900 focus:ring-primary focus:border-primary" />
+            <label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" x-model="sForm.active" class="rounded border-slate-300 text-primary focus:ring-primary" /> Sesi aktif</label>
+            <div class="mt-2 flex gap-2 justify-end">
+              <button @click="sessionModal = false" class="px-4 py-2 rounded-xl ring-1 ring-slate-200 dark:ring-slate-600 text-sm font-medium">Batal</button>
+              <button @click="saveSession()" :disabled="saving" class="px-4 py-2 rounded-xl bg-primary text-white text-sm font-semibold disabled:opacity-60">Simpan</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+    <nav class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-primary-dark text-white border-t border-white/10 flex shadow-[0_-2px_10px_rgba(0,0,0,0.15)]">
+      <template x-for="link in navLinks" :key="link.key">
+        <a :href="link.href" :class="active === link.key ? 'text-white bg-white/10' : 'text-teal-100/70'" class="flex-1 flex flex-col items-center justify-center gap-1 py-2">
+          <span x-html="link.icon"></span>
+          <span class="text-[10px] font-medium" x-text="link.short"></span>
+        </a>
+      </template>
+      <button @click="logout()" class="flex-1 flex flex-col items-center justify-center gap-1 py-2 text-rose-200">
+        <i class="ti ti-logout text-xl"></i>
+        <span class="text-[10px] font-medium">Keluar</span>
+      </button>
+    </nav>
+</body>
+</html>

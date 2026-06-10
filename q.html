@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jawaban — Tanya Muslim Solo</title>
+  <meta name="description" id="meta-desc" content="Jawaban tanya jawab Islami di Tanya Muslim Solo." />
+  <meta name="theme-color" content="#2f415b" />
+  <link rel="canonical" id="meta-canonical" href="https://tanya.muslimsolo.id/q.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" id="og-title" content="Tanya Muslim Solo" />
+  <meta property="og:description" id="og-desc" content="Jawaban tanya jawab Islami." />
+  <meta name="twitter:card" content="summary_large_image" />
+  <!-- Schema FAQPage diisi dinamis oleh detail.js -->
+  <script type="application/ld+json" id="faq-schema"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com?plugins=line-clamp,forms"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: {
+        colors: { primary: { DEFAULT: '#2f415b', dark: '#22304a' }, accent: { DEFAULT: '#F59E0B' } },
+        fontFamily: { sans: ['Inter', 'sans-serif'] },
+      } },
+    };
+  </script>
+  <link rel="stylesheet" href="/assets/css/app.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css" />
+  <link rel="icon" href="/logo.png" type="image/png" />
+  <link rel="apple-touch-icon" href="/logo.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <script src="/assets/js/config.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/ui.js"></script>
+  <script src="/assets/js/store.js"></script>
+  <script defer src="/assets/js/pages/detail.js"></script>
+  <script defer src="/assets/js/pwa.js"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 antialiased"
+      x-data x-init="$store.theme.init()">
+
+  <header class="bg-gradient-to-br from-primary to-primary-dark text-white">
+    <div class="max-w-3xl mx-auto px-4 py-5 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2.5">
+        <span class="grid place-items-center w-20 h-20 shrink-0"><img src="/logo.png" alt="Tanya Muslim Solo" class="w-full h-full object-contain" /></span>
+        <span class="font-extrabold text-lg">Tanya Muslim Solo</span>
+      </a>
+      <div class="flex items-center gap-1.5">
+        <a href="/arsip.html" class="text-sm font-medium px-3 py-2 rounded-lg hover:bg-white/15 transition">Arsip</a>
+        <button @click="$store.theme.toggle()" class="grid place-items-center w-10 h-10 rounded-lg hover:bg-white/15 transition" aria-label="Ganti tema">
+          <i x-show="!$store.theme.dark" class="ti ti-moon text-xl"></i>
+          <i x-show="$store.theme.dark" x-cloak class="ti ti-sun text-xl"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-8" x-data="detailPage()" x-init="init()">
+    <a href="/arsip.html" class="inline-flex items-center gap-1 text-sm text-primary font-medium hover:underline mb-5">← Kembali ke Arsip</a>
+
+    <!-- Skeleton -->
+    <div x-show="loading" class="space-y-4">
+      <div class="skeleton h-5 w-24 rounded"></div>
+      <div class="skeleton h-8 w-full rounded"></div>
+      <div class="skeleton h-8 w-2/3 rounded"></div>
+      <div class="skeleton h-32 w-full rounded-2xl mt-6"></div>
+      <div class="skeleton h-48 w-full rounded-2xl"></div>
+    </div>
+
+    <!-- Not found -->
+    <div x-show="!loading && !item" x-cloak class="text-center py-16">
+      <i class="ti ti-file-off inline-block mb-3 text-5xl text-slate-300 dark:text-slate-600"></i>
+      <p class="font-semibold">Jawaban tidak ditemukan</p>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Mungkin tautannya keliru atau belum dipublikasikan.</p>
+      <a href="/arsip.html" class="inline-block mt-4 text-primary font-semibold hover:underline">Lihat arsip lainnya →</a>
+    </div>
+
+    <!-- Konten -->
+    <article x-show="!loading && item" x-cloak class="fade-in">
+      <span :class="UI.categoryClass(item?.category)" class="inline-block text-xs font-semibold px-2.5 py-1 rounded-full" x-text="item?.category"></span>
+      <h1 class="mt-3 text-2xl sm:text-3xl font-extrabold leading-tight" x-text="item?.title"></h1>
+
+      <div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500 dark:text-slate-400">
+        <span class="inline-flex items-center gap-1.5">
+          <i class="ti ti-user text-base"></i>
+          <a :href="item?.ustadz_email ? '/ustadz.html?email=' + encodeURIComponent(item.ustadz_email) : '#'"
+             class="font-medium text-slate-700 dark:text-slate-200 hover:text-primary" x-text="item?.ustadz_name || 'Ustadz'"></a>
+        </span>
+        <span class="inline-flex items-center gap-1.5">
+          <i class="ti ti-calendar text-base"></i>
+          <span x-text="UI.formatDate(item?.published_at)"></span>
+        </span>
+        <span class="inline-flex items-center gap-1.5">
+          <i class="ti ti-eye text-base"></i>
+          <span><span x-text="item?.views || 0"></span> dibaca</span>
+        </span>
+      </div>
+
+      <!-- Pertanyaan -->
+      <section class="mt-6 bg-white dark:bg-slate-800 rounded-2xl p-5 ring-1 ring-slate-200 dark:ring-slate-700">
+        <h2 class="text-xs font-bold uppercase tracking-wide text-slate-400 mb-2">Pertanyaan</h2>
+        <div class="answer-body text-slate-700 dark:text-slate-200" x-html="UI.nl2br(item?.question)"></div>
+        <p class="mt-3 text-xs text-slate-400" x-show="askedBy" x-text="askedBy"></p>
+      </section>
+
+      <!-- Jawaban -->
+      <section class="mt-4 bg-gradient-to-br from-teal-50 to-white dark:from-slate-800 dark:to-slate-800 rounded-2xl p-5 ring-1 ring-teal-200/70 dark:ring-slate-700">
+        <h2 class="text-xs font-bold uppercase tracking-wide text-primary mb-2">Jawaban Ustadz</h2>
+        <div class="answer-body text-slate-800 dark:text-slate-100" x-html="UI.nl2br(item?.answer)"></div>
+      </section>
+
+      <!-- Share -->
+      <div class="mt-5 flex flex-wrap gap-2">
+        <button @click="share()" class="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-xl bg-white dark:bg-slate-800 ring-1 ring-slate-200 dark:ring-slate-700 hover:ring-primary transition"><i class="ti ti-share"></i>Bagikan</button>
+        <a :href="waLink" target="_blank" rel="noopener" class="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-xl bg-green-600 text-white hover:bg-green-700 transition">WhatsApp</a>
+      </div>
+
+      <!-- Pertanyaan terkait -->
+      <section x-show="related.length > 0" class="mt-10">
+        <h2 class="text-lg font-extrabold mb-3">Pertanyaan Terkait</h2>
+        <div class="grid sm:grid-cols-2 gap-3">
+          <template x-for="r in related" :key="r.id">
+            <a :href="'/q.html?slug=' + r.slug" class="bg-white dark:bg-slate-800 rounded-xl p-4 ring-1 ring-slate-200 dark:ring-slate-700 hover:ring-primary hover:shadow-sm transition">
+              <span :class="UI.categoryClass(r.category)" class="text-xs font-semibold px-2 py-0.5 rounded-full" x-text="r.category"></span>
+              <h3 class="mt-2 font-semibold text-sm leading-snug clamp-2" x-text="r.title"></h3>
+            </a>
+          </template>
+        </div>
+      </section>
+    </article>
+  </main>
+
+  <footer class="border-t border-slate-200 dark:border-slate-800 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+    <p>© <span x-text="new Date().getFullYear()"></span> Tanya Muslim Solo</p>
+  </footer>
+</body>
+</html>

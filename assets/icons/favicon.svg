@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect width="64" height="64" rx="14" fill="#0F766E"/>
+  <!-- Kubah masjid -->
+  <path d="M32 14c-5 4-7 8-7 12h14c0-4-2-8-7-12z" fill="#F59E0B"/>
+  <!-- Bulan sabit di puncak -->
+  <circle cx="32" cy="9" r="2.4" fill="#F59E0B"/>
+  <!-- Badan masjid -->
+  <rect x="20" y="26" width="24" height="22" rx="2" fill="#ffffff"/>
+  <!-- Pintu -->
+  <path d="M32 48V37c-2.4 0-4 1.8-4 4.2V48z" fill="#0F766E"/>
+  <path d="M32 48V37c2.4 0 4 1.8 4 4.2V48z" fill="#0F766E"/>
+  <!-- Menara -->
+  <rect x="14" y="30" width="4" height="18" rx="1" fill="#ffffff"/>
+  <rect x="46" y="30" width="4" height="18" rx="1" fill="#ffffff"/>
+  <circle cx="16" cy="28" r="2.4" fill="#F59E0B"/>
+  <circle cx="48" cy="28" r="2.4" fill="#F59E0B"/>
+  <!-- Lantai -->
+  <rect x="12" y="48" width="40" height="4" rx="1.5" fill="#134E4A"/>
+</svg>

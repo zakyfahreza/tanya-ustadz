@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kelola Pengguna — Tanya Muslim Solo</title>
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#2f415b" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <script>
+    tailwind.config = { darkMode: 'class', theme: { extend: {
+      colors: { primary: { DEFAULT: '#2f415b', dark: '#22304a' }, accent: { DEFAULT: '#F59E0B' } },
+      fontFamily: { sans: ['Inter', 'sans-serif'] } } } };
+  </script>
+  <link rel="stylesheet" href="/assets/css/app.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css" />
+  <link rel="icon" href="/logo.png" type="image/png" />
+  <script src="/assets/js/config.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/ui.js"></script>
+  <script src="/assets/js/store.js"></script>
+  <script defer src="/assets/js/pages/admin/shell.js"></script>
+  <script defer src="/assets/js/pages/admin/users.js"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 antialiased"
+      x-data="adminShell('users', true)" x-init="boot()">
+
+  <header class="lg:hidden sticky top-0 z-30 bg-primary text-white flex items-center justify-between px-4 py-3">
+    <img src="/logo.png" alt="Tanya Muslim Solo" class="h-12" />
+    <span class="font-extrabold">Kelola Pengguna</span>
+    <button @click="$store.theme.toggle()"><i class="ti ti-moon text-2xl"></i></button>
+  </header>
+
+  <div class="lg:flex">
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+           class="fixed lg:sticky top-0 z-40 lg:z-0 h-screen w-64 bg-primary-dark text-white flex flex-col transition-transform">
+      <div class="p-5 flex items-center gap-2.5 border-b border-white/10">
+        <span class="grid place-items-center w-16 h-16"><img src="/logo.png" alt="Tanya Muslim Solo" class="w-full h-full object-contain" /></span>
+        <div class="leading-tight"><p class="font-extrabold text-sm">Tanya Muslim Solo</p><p class="text-xs text-teal-100/70">Panel Kelola</p></div>
+        <button @click="sidebarOpen = false" class="lg:hidden ml-auto text-xl">✕</button>
+      </div>
+      <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
+        <template x-for="link in navLinks" :key="link.key">
+          <a :href="link.href" :class="active === link.key ? 'bg-white/15 text-white' : 'text-teal-50/80 hover:bg-white/10'"
+             class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition">
+            <span x-html="link.icon"></span><span x-text="link.label"></span>
+          </a>
+        </template>
+      </nav>
+      <div class="p-3 border-t border-white/10">
+        <div class="px-3 py-2 text-xs text-teal-100/70"><p class="font-semibold text-white" x-text="user.name"></p><p x-text="user.role === 'admin' ? 'Administrator' : 'Ustadz'"></p></div>
+        <button @click="logout()" class="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-rose-100 hover:bg-rose-500/20 transition"><i class="ti ti-logout text-xl"></i><span>Keluar</span></button>
+      </div>
+    </aside>
+    <div x-show="sidebarOpen" @click="sidebarOpen = false" x-cloak class="fixed inset-0 z-30 bg-black/40 lg:hidden"></div>
+
+    <!-- ===== Konten ===== -->
+    <main class="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8" x-data="usersPage()" x-init="load()">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="text-2xl font-extrabold">Kelola Pengguna</h1>
+          <p class="text-sm text-slate-500 dark:text-slate-400">Akun admin & ustadz yang dapat login.</p>
+        </div>
+        <button @click="openCreate()" class="inline-flex items-center gap-1.5 bg-primary hover:bg-primary-dark text-white font-semibold px-4 py-2.5 rounded-xl text-sm transition"><i class="ti ti-plus"></i>Tambah</button>
+      </div>
+
+      <div x-show="loading" class="space-y-3">
+        <template x-for="i in 3" :key="i"><div class="skeleton h-16 rounded-2xl"></div></template>
+      </div>
+
+      <div x-show="!loading" class="bg-white dark:bg-slate-800 rounded-2xl ring-1 ring-slate-200 dark:ring-slate-700 divide-y divide-slate-100 dark:divide-slate-700 overflow-hidden">
+        <template x-for="u in users" :key="u.email">
+          <div class="flex items-center gap-3 p-4">
+            <div class="grid place-items-center w-10 h-10 rounded-full bg-primary/10 text-primary font-bold" x-text="(u.name||'?').charAt(0).toUpperCase()"></div>
+            <div class="min-w-0">
+              <p class="font-semibold truncate" x-text="u.name"></p>
+              <p class="text-xs text-slate-400 truncate" x-text="u.email"></p>
+            </div>
+            <span :class="u.role === 'admin' ? 'bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-200' : 'bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-200'"
+                  class="text-xs font-semibold px-2.5 py-1 rounded-full" x-text="u.role"></span>
+            <span x-show="!u.active" class="text-xs font-semibold px-2 py-1 rounded-full bg-slate-100 text-slate-500 dark:bg-slate-700">nonaktif</span>
+            <div class="ml-auto flex gap-1">
+              <button @click="openEdit(u)" class="px-3 py-1.5 rounded-lg text-sm ring-1 ring-slate-200 dark:ring-slate-600 hover:ring-primary transition inline-flex items-center gap-1.5"><i class="ti ti-pencil"></i>Edit</button>
+              <button @click="remove(u)" class="px-3 py-1.5 rounded-lg text-sm ring-1 ring-rose-200 text-rose-600 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition inline-flex items-center gap-1.5"><i class="ti ti-trash"></i>Hapus</button>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- Modal -->
+      <div x-show="modal" x-cloak class="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4" @click.self="modal = false">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 w-full max-w-sm grid gap-3">
+          <h3 class="font-bold text-lg" x-text="editing ? 'Edit Pengguna' : 'Tambah Pengguna'"></h3>
+          <div>
+            <label class="block text-sm font-medium mb-1">Email</label>
+            <input type="email" x-model="form.email" :disabled="editing" class="w-full rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-900 focus:ring-primary focus:border-primary disabled:opacity-60" placeholder="nama@tms.id" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Nama</label>
+            <input type="text" x-model="form.name" class="w-full rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-900 focus:ring-primary focus:border-primary" placeholder="Nama lengkap" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Peran</label>
+            <select x-model="form.role" class="w-full rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-900 focus:ring-primary focus:border-primary">
+              <option value="ustadz">Ustadz</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1" x-text="editing ? 'Password (kosongkan jika tidak diubah)' : 'Password'"></label>
+            <input type="text" x-model="form.password" class="w-full rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-900 focus:ring-primary focus:border-primary" placeholder="••••••" />
+          </div>
+          <label class="inline-flex items-center gap-2 text-sm">
+            <input type="checkbox" x-model="form.active" class="rounded border-slate-300 text-primary focus:ring-primary" /> Aktif
+          </label>
+          <div class="mt-2 flex gap-2 justify-end">
+            <button @click="modal = false" class="px-4 py-2 rounded-xl ring-1 ring-slate-200 dark:ring-slate-600 text-sm font-medium">Batal</button>
+            <button @click="save()" :disabled="saving" class="px-4 py-2 rounded-xl bg-primary text-white text-sm font-semibold disabled:opacity-60">Simpan</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+    <nav class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-primary-dark text-white border-t border-white/10 flex shadow-[0_-2px_10px_rgba(0,0,0,0.15)]">
+      <template x-for="link in navLinks" :key="link.key">
+        <a :href="link.href" :class="active === link.key ? 'text-white bg-white/10' : 'text-teal-100/70'" class="flex-1 flex flex-col items-center justify-center gap-1 py-2">
+          <span x-html="link.icon"></span>
+          <span class="text-[10px] font-medium" x-text="link.short"></span>
+        </a>
+      </template>
+      <button @click="logout()" class="flex-1 flex flex-col items-center justify-center gap-1 py-2 text-rose-200">
+        <i class="ti ti-logout text-xl"></i>
+        <span class="text-[10px] font-medium">Keluar</span>
+      </button>
+    </nav>
+</body>
+</html>

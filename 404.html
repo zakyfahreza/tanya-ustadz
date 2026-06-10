@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Halaman Tidak Ditemukan — Tanya Muslim Solo</title>
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#2f415b" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: {
+        colors: { primary: { DEFAULT: '#2f415b', dark: '#22304a' }, accent: { DEFAULT: '#F59E0B' } },
+        fontFamily: { sans: ['Inter', 'sans-serif'] },
+      } },
+    };
+  </script>
+  <link rel="stylesheet" href="/assets/css/app.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css" />
+  <link rel="icon" href="/logo.png" type="image/png" />
+  <link rel="apple-touch-icon" href="/logo.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <script src="/assets/js/config.js"></script>
+  <script src="/assets/js/store.js"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+
+<body class="min-h-screen bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 antialiased flex items-center justify-center px-6"
+      x-data x-init="$store.theme.init()">
+  <div class="text-center max-w-md">
+    
+    <h1 class="text-5xl font-extrabold text-primary">404</h1>
+    <p class="mt-3 text-lg font-semibold">Halaman tidak ditemukan</p>
+    <p class="mt-2 text-slate-500 dark:text-slate-400">Tautan yang Anda buka mungkin sudah dipindahkan atau tidak tersedia.</p>
+    <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
+      <a href="/" class="bg-primary hover:bg-primary-dark text-white font-semibold px-5 py-2.5 rounded-xl transition">Kembali ke Beranda</a>
+      <a href="/arsip.html" class="ring-1 ring-slate-300 dark:ring-slate-600 font-semibold px-5 py-2.5 rounded-xl hover:ring-primary transition">Lihat Arsip</a>
+    </div>
+  </div>
+</body>
+</html>
