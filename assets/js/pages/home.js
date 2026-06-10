@@ -35,11 +35,15 @@ document.addEventListener('alpine:init', () => {
     async loadUstadz() {
       try {
         const res = await API.listUstadz();
+        console.log('[questionForm] listUstadz response:', res);
         if (res && res.ok && Array.isArray(res.data)) {
-          this.ustadzList = res.data.filter((u) => u.active !== false);
+          this.ustadzList = res.data;
+          console.log('[questionForm] ustadzList loaded:', this.ustadzList.length, 'ustadz');
+        } else {
+          console.warn('[questionForm] listUstadz gagal:', res && res.message);
         }
-      } catch (_) {
-        // Abaikan error; pilihan ustadz tetap opsional
+      } catch (err) {
+        console.error('[questionForm] loadUstadz error:', err);
       }
     },
 
